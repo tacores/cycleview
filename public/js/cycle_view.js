@@ -1,7 +1,7 @@
 
 var coordinates = [];
 var distance_arr = [];
-var gkey = '';
+var gkey = 'xxx';
 
 var jisoku = 30; // km/h
 var currentDistance = 0;
@@ -10,14 +10,12 @@ function start_cycle_view($filename){
     'use strict';
     coordinates = [];
     loadKml($filename);
-    //subdivide_coordinates();
-    drawView(0);
     start_view();
 }
 
 function start_view(){
     'use strict';
-    var index = 1;
+    var index = 0;
     var count = 0;
     var timer = window.setInterval(function() {
 	move(count++);
@@ -28,10 +26,19 @@ function start_view(){
 }
 
 function move(count){
+    'use strict';
     currentDistance += (((30 * 1000) / 60) / 60); // m/s 
 }
 
 function needDraw(index){
+    'use strict';
+    console.log("next: " + distance_arr[index] + " current: " + currentDistance + "\n");
+    if(distance_arr[index] <= currentDistance){
+        console.log("next!\n");
+        return true;
+    }
+    console.log("wait...\n");
+    return false;
 }
 
 function drawView(index){
@@ -71,8 +78,9 @@ function set_coordinates(){
 
     var allTextLines = coordinates_str.split(/\r\n|\n/);
 
-    var prev_longitude = 0;
-    var prev_latitude = 0;
+    var first_element = true;
+    var prev_coordinate = {};
+    var sum_distance = 0;
     for(var i=0; i < allTextLines.length; i++){
 	if(allTextLines[i] === '') continue;
 
@@ -83,29 +91,20 @@ function set_coordinates(){
 
         var tobj = {'longitude':longitude, 'latitude':latitude, 'altitude':altitude};
         coordinates.push(tobj);
+
+	if(first_element){
+	    first_element = false;
+	    distance_arr.push(0);
+	    prev_coordinate = tobj;
+	    continue;
+	}
+
+	var d = distance(prev_coordinate, tobj);
+	sum_distance += d;
+	distance_arr.push(sum_distance);
+	prev_coordinate = tobj;
     }
 }  
-
-/*
-function subdivide_coordinates(){
-    'use strict';
-    var new_coordinates = [];
-    for(var i = 0; i < coordinates.length - 1; i++){
-	new_coordinates.push(coordinates[i]);
-	var delta_longitude = (coordinates[i + 1].longitude - coordinates[i].longitude) / 5;
-	var delta_latitude = (coordinates[i + 1].latitude - coordinates[i].latitude) / 5;
-
-	for(var j = 0; j < 4; j++){
-            var tobj = {'longitude':coordinates[i].longitude + delta_longitude,
-		    'latitude':coordinates[i].latitude + delta_latitude,
-		    'altitude':coordinates[i].altitude};
-            new_coordinates.push(tobj);
-	}
-    }
-    new_coordinates.push(coordinates[coordinates.length - 1]);
-    coordinates = new_coordinates;
-}
-*/
 
 // fromからtoへの方角（度）を返す
 function heading(from, to) {
@@ -125,22 +124,24 @@ function d2r(angle) {
 }
 
 function distance(from, to) {
+    'use strict';
     var lat1 = from.latitude;
     var lon1 = from.longitude;
     var lat2 = to.latitude;
     var lon2 = to.longitude;
 
     var R = 6371e3; // metres
-    var phi1 = lat1.toRadians();
-    var phi2 = lat2.toRadians();
-    var delta_phi = (lat2-lat1).toRadians();
-    var delta_lambda = (lon2-lon1).toRadians();
+    var phi1 = d2r(lat1);
+    var phi2 = d2r(lat2);
+    var delta_phi = d2r(lat2-lat1);
+    var delta_lambda = d2r(lon2-lon1);
 
     var a = Math.sin(delta_phi/2) * Math.sin(delta_phi/2) +
             Math.cos(phi1) * Math.cos(phi2) *
             Math.sin(delta_lambda/2) * Math.sin(delta_lambda/2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    var d = R * c;
 
-    return R * c;
+    return d;
 }
 
