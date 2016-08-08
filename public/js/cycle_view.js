@@ -1,6 +1,10 @@
 
 var coordinates = [];
-var gkey = 'xxx';
+var distance_arr = [];
+var gkey = '';
+
+var jisoku = 30; // km/h
+var currentDistance = 0;
 
 function start_cycle_view($filename){
     'use strict';
@@ -14,9 +18,20 @@ function start_cycle_view($filename){
 function start_view(){
     'use strict';
     var index = 1;
-    window.setInterval(function() {
-	drawView(index++);
-    }, 4000);
+    var count = 0;
+    var timer = window.setInterval(function() {
+	move(count++);
+	if(needDraw(index)) {
+	    drawView(index++);
+	}
+    }, 1000);
+}
+
+function move(count){
+    currentDistance += (((30 * 1000) / 60) / 60); // m/s 
+}
+
+function needDraw(index){
 }
 
 function drawView(index){
@@ -56,6 +71,8 @@ function set_coordinates(){
 
     var allTextLines = coordinates_str.split(/\r\n|\n/);
 
+    var prev_longitude = 0;
+    var prev_latitude = 0;
     for(var i=0; i < allTextLines.length; i++){
 	if(allTextLines[i] === '') continue;
 
@@ -69,6 +86,7 @@ function set_coordinates(){
     }
 }  
 
+/*
 function subdivide_coordinates(){
     'use strict';
     var new_coordinates = [];
@@ -87,6 +105,7 @@ function subdivide_coordinates(){
     new_coordinates.push(coordinates[coordinates.length - 1]);
     coordinates = new_coordinates;
 }
+*/
 
 // fromからtoへの方角（度）を返す
 function heading(from, to) {
@@ -103,5 +122,25 @@ function heading(from, to) {
 function d2r(angle) {
     'use strict';
     return Math.PI * angle / 180.0;
+}
+
+function distance(from, to) {
+    var lat1 = from.latitude;
+    var lon1 = from.longitude;
+    var lat2 = to.latitude;
+    var lon2 = to.longitude;
+
+    var R = 6371e3; // metres
+    var phi1 = lat1.toRadians();
+    var phi2 = lat2.toRadians();
+    var delta_phi = (lat2-lat1).toRadians();
+    var delta_lambda = (lon2-lon1).toRadians();
+
+    var a = Math.sin(delta_phi/2) * Math.sin(delta_phi/2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(delta_lambda/2) * Math.sin(delta_lambda/2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+    return R * c;
 }
 
