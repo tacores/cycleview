@@ -5,8 +5,8 @@
 	<filename>xml/oono.kml</filename>
 </item>  
 <item>  
-	<name>玉野</name>
-	<filename>xml/tamano.kml</filename>
+	<name>渋川・児島</name>
+	<filename>xml/sibu-koji.kml</filename>
 </item>
 <item>  
 	<name>瀬戸大橋</name>
@@ -15,5 +15,9 @@
 <item>  
 	<name>しまなみ海道</name>
 	<filename>xml/simanami.kml</filename>
+</item>
+<item>  
+	<name>アムステルダム</name>
+	<filename>xml/amsterdam.kml</filename>
 </item>
 </info>
