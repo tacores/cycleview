@@ -1,51 +1,60 @@
 
-var $mapfile_hash = {};
+var filename_hash = {}; /* マップ名→ファイル名 */
 
 jQuery(function($){
     'use strict';
+
     $('#gobtn').on('click',function(){
-        OnGoButtonClick();
+        on_go_button_click();
     });
     $('#pict').hide();
-    loadXml();
+
+    load_setting_xml();
 });
 
-function loadXml(){
+function load_setting_xml(){
     'use strict';
+
     $.ajax({  
         url:'xml/maplist.xml',  
         type:'get',  
         dataType:'xml',  
         timeout:3000,  
-        success:parse_xml  
+        success:parse_setting_xml  
     });  
 }
 
-function parse_xml(xml,status){  
+function parse_setting_xml(xml,status){  
     'use strict';
+
     if(status!='success')return;  
-    $(xml).find('item').each(disp);  
+    $(xml).find('item').each(set_a_mapname_to_selectlist);  
 }  
 
-function disp(){  
+function set_a_mapname_to_selectlist(){  
     'use strict';
-    var $name = $(this).find('name').text();  
-    var $filename= $(this).find('filename').text();  
+
+    var name = $(this).find('name').text();  
+    var filename= $(this).find('filename').text();  
   
-    $('#maplist').append('<option value="' + $name + '">' + $name + '</option>');
+    $('#maplist').append('<option value="' + name + '">' + name + '</option>');
 
-    $mapfile_hash[$name] = $filename;
+    /* マップ名→マップファイル名のハッシュを保持 */
+    filename_hash[name] = filename;
 }  
 
-function OnGoButtonClick(){
+function on_go_button_click(){
     'use strict';
-    var $name = $('#maplist option:selected').val();
-    var $filename = $mapfile_hash[$name];
 
+    /* 選択画面のコントロールを非表示 */
     $('#maplist').hide();
     $('#gobtn').hide();
+    $('#speedlist').hide();
     $('#pict').show();
 
-    start_cycle_view($filename);
+    /* サイクルビュー表示を開始 */
+    var name = $('#maplist option:selected').val();
+    var filename = filename_hash[name];
+    start_cycle_view(filename);
 }
 

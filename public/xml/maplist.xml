@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>  
 <info>  
 <item>  
-<name>大野</name>
-<filename>xml/oono.kml</filename>
+	<name>大野</name>
+	<filename>xml/oono.kml</filename>
 </item>  
 <item>  
-<name>玉野</name>
-<filename>xml/tamano.kml</filename>
-</item>  
+	<name>玉野</name>
+	<filename>xml/tamano.kml</filename>
+</item>
+<item>  
+	<name>瀬戸大橋</name>
+	<filename>xml/seto-oohasi.kml</filename>
+</item>
+<item>  
+	<name>しまなみ海道</name>
+	<filename>xml/simanami.kml</filename>
+</item>
 </info>

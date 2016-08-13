@@ -1,39 +1,43 @@
 
-var coordinates = [];
-var distance_arr = [];
-var gkey = 'xxx';
+var coordinates = []; //全座標を保持
+var distance_arr = []; //各座標の、スタート地点からの距離
+var gkey = 'xxx'; //Google APIキー
 
-var jisoku = 30; // km/h
-var currentDistance = 0;
+var speed = 0; // km/h
+var currentDistance = 0; //スタート地点からの距離
 
-function start_cycle_view($filename){
+/* サイクルビュー表示を開始 */
+function start_cycle_view(filename){
     'use strict';
     coordinates = [];
-    loadKml($filename);
-    start_view();
+    distance_arr = [];
+    speed = $('#speedlist option:selected').val();
+
+    load_kml(filename);
+    start_timer();
 }
 
-function start_view(){
+function start_timer(){
     'use strict';
-    var index = 0;
-    var count = 0;
+    var current_pos = 0;
+    var timer_count = 0;
     var timer = window.setInterval(function() {
-	move(count++);
-	if(needDraw(index)) {
-	    drawView(index++);
+	move(timer_count++);
+	if(need_draw(current_pos)) {
+	    draw_view(current_pos++);
 	}
     }, 1000);
 }
 
-function move(count){
+function move(timer_count){
     'use strict';
-    currentDistance += (((30 * 1000) / 60) / 60); // m/s 
+    currentDistance += (((speed * 1000) / 60) / 60); // m/s 
 }
 
-function needDraw(index){
+function need_draw(current_pos){
     'use strict';
-    console.log("next: " + distance_arr[index] + " current: " + currentDistance + "\n");
-    if(distance_arr[index] <= currentDistance){
+    console.log("next: " + distance_arr[current_pos] + " current: " + currentDistance + "\n");
+    if(distance_arr[current_pos] <= currentDistance){
         console.log("next!\n");
         return true;
     }
@@ -41,12 +45,11 @@ function needDraw(index){
     return false;
 }
 
-function drawView(index){
+function draw_view(current_pos){
     'use strict';
-
     var url = 'url("https://maps.googleapis.com/maps/api/streetview?size=980x661&'
-		    + 'location=' + coordinates[index].latitude + ',' + coordinates[index].longitude
-		    + '&heading=' + heading(coordinates[index], coordinates[index + 1]) + '&pitch=-0.76'
+		    + 'location=' + coordinates[current_pos].latitude + ',' + coordinates[current_pos].longitude
+		    + '&heading=' + heading(coordinates[current_pos], coordinates[current_pos + 1]) + '&pitch=-0.76'
 		    + '&key=' + gkey + '")';
 
     $('.box').css({
@@ -54,11 +57,11 @@ function drawView(index){
     });
 }
 
-function loadKml($filename){
+function load_kml(filename){
     'use strict';
     $.ajax({  
 	async:false,
-        url:$filename,  
+        url:filename,  
         type:'get',  
         dataType:'xml',  
         timeout:3000,  
@@ -74,17 +77,16 @@ function parse_kml(xml, status){
 
 function set_coordinates(){  
     'use strict';
-    var coordinates_str = $(this).find('coordinates').text();  
-
-    var allTextLines = coordinates_str.split(/\r\n|\n/);
+    var coordinates_str = $(this).find('coordinates').text(); //全座標が含まれる文字列
+    var coordinate_str_arr = coordinates_str.split(/\r\n|\n/); //1行（1座標）ごとに分解
 
     var first_element = true;
     var prev_coordinate = {};
     var sum_distance = 0;
-    for(var i=0; i < allTextLines.length; i++){
-	if(allTextLines[i] === '') continue;
+    for(var i=0; i < coordinate_str_arr.length; i++){
+	if(coordinate_str_arr[i] === '') continue;
 
-        var coordinate = allTextLines[i].split(',');
+        var coordinate = coordinate_str_arr[i].split(',');
         var longitude = coordinate[0];	// 緯度
 	var latitude = coordinate[1];;	// 経度
 	var altitude = coordinate[2];;	// 標高
@@ -123,6 +125,7 @@ function d2r(angle) {
     return Math.PI * angle / 180.0;
 }
 
+// fromからtoへの距離（メートル）を返す
 function distance(from, to) {
     'use strict';
     var lat1 = from.latitude;
